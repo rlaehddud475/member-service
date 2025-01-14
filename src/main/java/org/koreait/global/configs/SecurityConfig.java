@@ -1,8 +1,8 @@
 
 package org.koreait.global.configs;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.koreait.global.exceptions.UnAuthorizedException;
 import org.koreait.member.jwt.filters.LoginFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,15 +42,20 @@ public class SecurityConfig {
                 .addFilterBefore(loginFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(c -> {
                     c.authenticationEntryPoint((req, res, e) -> {
-                        throw new UnAuthorizedException();
+                        res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     }); // 미로그인 상태에서 접근 한 경우
                     c.accessDeniedHandler((req, res, e) -> {
-                        throw new UnAuthorizedException();
+                        res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     }); // 로그인 후 권한이 없는 경우
                 })
                 .authorizeHttpRequests(c -> {
-                    c.requestMatchers("/member/join", "/member/login").permitAll()
-                            .requestMatchers("/admin/member/**").hasAnyAuthority("ADMIN")
+                    c.requestMatchers(
+                                    "/join", // /api/v1/member/join
+                                    "/login",
+                                    "/apidocs.html",
+                                    "/swagger-ui*/**",
+                                    "/api-docs/**").permitAll()
+                            .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
                             .anyRequest().authenticated();
                 });
 

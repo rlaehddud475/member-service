@@ -76,6 +76,10 @@ public class TokenService {
      * @return
      */
     public Authentication authenticate(String token) {
+
+        // 토큰 유효성 검사
+        validate(token);
+
         Claims claims = Jwts.parser()
                 .setSigningKey(key)
                 .build()
@@ -84,7 +88,9 @@ public class TokenService {
 
         String email = claims.getSubject();
         String authorities = (String) claims.get("authorities");
-        List<SimpleGrantedAuthority> _authorities = Arrays.stream(authorities.split("||")).map(SimpleGrantedAuthority::new).toList();
+        List<SimpleGrantedAuthority> _authorities = Arrays.stream(authorities.split("\\|\\|")).map(SimpleGrantedAuthority::new).toList();
+        System.out.println("authorities:" + authorities);
+        System.out.println("_authorities:" + _authorities);
 
         MemberInfo memberInfo = (MemberInfo) infoService.loadUserByUsername(email);
         memberInfo.setAuthorities(_authorities);
@@ -100,7 +106,7 @@ public class TokenService {
         String authHeader = request.getHeader("Authorization");
 
         if (!StringUtils.hasText(authHeader)) {
-            throw new UnAuthorizedException();
+            return null; // 회원가입 또는 로그인 시
         }
 
         String token = authHeader.substring(7);
