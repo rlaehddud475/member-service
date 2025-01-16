@@ -36,4 +36,4 @@ out/
 ### VS Code ###
 .vscode/
 generated/
-.Ds_store/
+.Ds_Store/
